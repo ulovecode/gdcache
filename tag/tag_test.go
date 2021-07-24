@@ -1,4 +1,4 @@
-package tags
+package tag
 
 import (
 	"reflect"
@@ -6,13 +6,14 @@ import (
 )
 
 type TagTest struct {
-	Id  int64 `cacheId:"11"`
+	Id  int64 `cache:"11"`
 	Id2 int64
-	Id3 int64 `cacheId:"2"`
-	Id4 int64 `cacheId:"3"`
+	Id3 int64 `cache:"2"`
+	Id4 int64 `cache:"3"`
 }
 
 func TestTag_GetPkTagField(t1 *testing.T) {
+	ConfigTag("cache")
 	type fields struct {
 		tagName string
 	}
@@ -31,9 +32,6 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 	}{
 		{
 			name: "",
-			fields: fields{
-				tagName: "cacheId",
-			},
 			args: args{
 				value: tagTest,
 			},
@@ -42,7 +40,7 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 					Name:      "Id3",
 					PkgPath:   "",
 					Type:      reflect.TypeOf(int64(0)),
-					Tag:       `cacheId:"2"`,
+					Tag:       `cache:"2"`,
 					Offset:    16,
 					Index:     []int{2},
 					Anonymous: false,
@@ -51,7 +49,7 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 					Name:      "Id4",
 					PkgPath:   "",
 					Type:      reflect.TypeOf(int64(0)),
-					Tag:       `cacheId:"3"`,
+					Tag:       `cache:"3"`,
 					Offset:    24,
 					Index:     []int{3},
 					Anonymous: false,
@@ -60,7 +58,7 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 					Name:      "Id",
 					PkgPath:   "",
 					Type:      reflect.TypeOf(int64(0)),
-					Tag:       `cacheId:"11"`,
+					Tag:       `cache:"11"`,
 					Offset:    0,
 					Index:     []int{0},
 					Anonymous: false,
@@ -71,13 +69,10 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := Tag{
-				tagName: tt.fields.tagName,
-			}
-			got := t.GetCacheTagSortFields(tt.args.value)
+			got := GetCacheTagFields(tt.args.value)
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t1.Errorf("GetCacheTagSortFields() got = %v, want %v", got, tt.want)
+				t1.Errorf("GetCacheTagFields() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
