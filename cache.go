@@ -138,6 +138,18 @@ func (c CacheHandler) GetEntry(entry schemas.IEntry) (bool, error) {
 	return has, err
 }
 
+func (c CacheHandler) DelEntries(entries []schemas.IEntry, sql string) error {
+	err := c.GetEntries(entries, sql)
+	if err != nil {
+		return err
+	}
+	pk, err := schemas.GetPKsByEntries(entries)
+	if err != nil {
+		return err
+	}
+	return c.cacheHandler.DeleteAll(pk)
+}
+
 type EntryCache struct {
 	entry    schemas.IEntry
 	entryKey string
@@ -171,18 +183,6 @@ func (c CacheHandler) storeCache(entries ...schemas.IEntry) {
 	if err != nil {
 		c.log.Error("Failed StoreAll err:%v keyValues:%v", err, keyValues)
 	}
-}
-
-func (c CacheHandler) DelEntries(entries []schemas.IEntry, sql string) error {
-	err := c.GetEntries(entries, sql)
-	if err != nil {
-		return err
-	}
-	pk, err := schemas.GetPKsByEntries(entries)
-	if err != nil {
-		return err
-	}
-	return c.cacheHandler.DeleteAll(pk)
 }
 
 func (c CacheHandler) setIdsByCacheSQL(pks schemas.PK, sql string) error {
