@@ -3,7 +3,7 @@ package schemas
 import (
 	"errors"
 	"fmt"
-	"gdcache/tag"
+	"github.com/ulovecode/gdcache/tag"
 	"reflect"
 	"strings"
 )

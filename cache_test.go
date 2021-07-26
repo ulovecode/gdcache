@@ -1,7 +1,7 @@
 package gdcache
 
 import (
-	"gdcache/schemas"
+	"github.com/ulovecode/gdcache/schemas"
 	"testing"
 )
 

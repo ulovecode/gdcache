@@ -1,6 +1,6 @@
 package gdcache
 
-import "gdcache/log"
+import "github.com/ulovecode/gdcache/log"
 
 type Options struct {
 	cacheTagName string

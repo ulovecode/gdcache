@@ -1,6 +1,6 @@
 package db
 
-import "gdcache/schemas"
+import "github.com/ulovecode/gdcache/schemas"
 
 type IDB interface {
 	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type

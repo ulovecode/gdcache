@@ -2,12 +2,12 @@ package gdcache
 
 import (
 	"fmt"
-	"gdcache/builder"
-	"gdcache/db"
-	"gdcache/log"
-	gdreflect "gdcache/reflect"
-	"gdcache/schemas"
-	"gdcache/tag"
+	"github.com/ulovecode/gdcache/builder"
+	"github.com/ulovecode/gdcache/db"
+	"github.com/ulovecode/gdcache/log"
+	gdreflect "github.com/ulovecode/gdcache/reflect"
+	"github.com/ulovecode/gdcache/schemas"
+	"github.com/ulovecode/gdcache/tag"
 )
 
 type returnKeyValue struct {

@@ -1,8 +1,8 @@
 package builder
 
 import (
-	"gdcache/schemas"
-	"gdcache/tag"
+	"github.com/ulovecode/gdcache/schemas"
+	"github.com/ulovecode/gdcache/tag"
 	"testing"
 )
 

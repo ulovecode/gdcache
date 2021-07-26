@@ -2,7 +2,7 @@ package builder
 
 import (
 	"fmt"
-	"gdcache/schemas"
+	"github.com/ulovecode/gdcache/schemas"
 	"strings"
 )
 

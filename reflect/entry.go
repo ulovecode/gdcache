@@ -1,7 +1,7 @@
 package reflect
 
 import (
-	"gdcache/schemas"
+	"github.com/ulovecode/gdcache/schemas"
 	"reflect"
 )
 
