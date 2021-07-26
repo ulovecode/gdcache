@@ -11,9 +11,8 @@ import (
 )
 
 type returnKeyValue struct {
-	key   interface{}
-	value []byte
-	has   bool
+	keyValue
+	has bool
 }
 
 type keyValue struct {

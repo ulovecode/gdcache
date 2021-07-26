@@ -18,3 +18,7 @@ gdcache adopts a strategy of gradually updating the cache. When you access a key
 ![img.png](doc/expiration-strategy-img.png)
 
 As shown in the above figure, each entry will have a version number. Whenever we know that this entry is updated and accessed by the user, we will update the cache until the entire entry is replaced.
+
+## Save memory
+
+The conventional caching framework will cache the content of the result, but the gdcache cache library is different from it. It will only cache the id of the result and find the value through the id. The advantage of this is that the value can be reused, and the value corresponding to id will only be cached once.
