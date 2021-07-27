@@ -3,50 +3,50 @@ package gdcache
 import (
 	"fmt"
 	"github.com/ulovecode/gdcache/builder"
-	"github.com/ulovecode/gdcache/db"
 	"github.com/ulovecode/gdcache/log"
 	gdreflect "github.com/ulovecode/gdcache/reflect"
 	"github.com/ulovecode/gdcache/schemas"
 	"github.com/ulovecode/gdcache/tag"
+	"reflect"
 )
 
-type returnKeyValue struct {
-	keyValue
-	has bool
+type ReturnKeyValue struct {
+	KeyValue
+	Has bool
 }
 
-type keyValue struct {
-	key   interface{}
-	value []byte
+type KeyValue struct {
+	Key   string
+	Value []byte
 }
 
 type ICache interface {
-	StoreAll(keyValues ...keyValue) (err error)
+	StoreAll(keyValues ...KeyValue) (err error)
 	Get(key string) (data []byte, has bool, err error)
-	GetAll(keys schemas.PK) (data []returnKeyValue, err error)
-	DeleteAll(key schemas.PK) error
+	GetAll(keys schemas.PK) (data []ReturnKeyValue, err error)
+	DeleteAll(keys schemas.PK) error
 }
 
 type ICacheHandler interface {
 	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
-	GetEntries(entry []schemas.IEntry, sql string) error
+	GetEntries(entrySlice interface{}, sql string) error
 	// GetEntry get a pointer to an entity type and return the entity
 	GetEntry(entry schemas.IEntry) (bool, error)
 	// DelEntries delete the corresponding execution entity through sql,
 	// Before the update, you can query the id to be deleted first, and then delete these through defer
-	DelEntries(entry []schemas.IEntry, sql string) error
+	DelEntries(entrySlice interface{}, sql string) error
 }
 
 var _ ICacheHandler = CacheHandler{}
 
 type CacheHandler struct {
 	cacheHandler    ICache
-	databaseHandler db.IDB
+	databaseHandler IDB
 	serializer      Serializer
 	log             log.Logger
 }
 
-func NewCacheHandler(cacheHandler ICache, databaseHandler db.IDB, options ...OptionsFunc) *CacheHandler {
+func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...OptionsFunc) *CacheHandler {
 	o := Options{}
 	for _, option := range options {
 		option(&o)
@@ -68,8 +68,10 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler db.IDB, options ...Opt
 	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
 }
 
-func (c CacheHandler) GetEntries(entries []schemas.IEntry, sql string) error {
+func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 
+	entriesValue := reflect.Indirect(reflect.ValueOf(entrySlice))
+	entryElementType := entriesValue.Type().Elem()
 	pks, err := c.getIdsByCacheSQL(sql)
 	if err != nil {
 		c.log.Error("getIdsByCacheSQL err: %v ,sql :%v", err, sql)
@@ -82,27 +84,40 @@ func (c CacheHandler) GetEntries(entries []schemas.IEntry, sql string) error {
 
 	restPk := make(schemas.PK, 0)
 	for _, kv := range keyValues {
-		if !kv.has {
-			restPk = append(restPk, kv.key)
+		if !kv.Has {
+			restPk = append(restPk, kv.Key)
 			continue
 		}
-		entry := gdreflect.GetSliceValue(entries)
-		err = c.serializer.Deserialize(kv.value, entry)
+		entry := reflect.New(entryElementType).Interface()
+		err = c.serializer.Deserialize(kv.Value, entry)
 		if err != nil {
-			restPk = append(restPk, kv.key)
+			restPk = append(restPk, kv.Key)
 			continue
 		}
-		entries = append(entries, entry)
+		entriesValue = reflect.Append(entriesValue, reflect.Indirect(reflect.ValueOf(entry)))
 	}
-	if len(restPk) > 0 {
-		emptySlice := gdreflect.MakeEmptySlice(entries)
-		err = c.databaseHandler.GetEntries(emptySlice, sql)
+
+	if len(restPk) > 0 || isNoCacheSQL {
+		emptySlice, err := c.databaseHandler.GetEntries(reflect.MakeSlice(entriesValue.Type(), 0, 0), sql)
 		if err != nil {
 			c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
 			return err
 		}
-		entries = append(entries, emptySlice...)
-		c.storeCache(emptySlice...)
+
+		var res interface{}
+		if gdreflect.IsPointerElement(entriesValue.Interface()) && !gdreflect.IsPointerElement(emptySlice) {
+			res = gdreflect.CovertSliceStructValue2PointerValue(emptySlice)
+		} else if !gdreflect.IsPointerElement(entriesValue.Interface()) && gdreflect.IsPointerElement(emptySlice) {
+			res = gdreflect.CovertSlicePointerValue2StructValue(emptySlice)
+		} else {
+			res = emptySlice
+		}
+
+		resValue := reflect.Indirect(reflect.ValueOf(res))
+		if res != nil && resValue.Len() > 0 {
+			entriesValue = reflect.AppendSlice(entriesValue, resValue)
+			c.storeCache(entriesValue.Interface())
+		}
 	}
 
 	if isNoCacheSQL {
@@ -111,6 +126,8 @@ func (c CacheHandler) GetEntries(entries []schemas.IEntry, sql string) error {
 			c.log.Error("setIdsByCacheSQL err:%v , restPk:%v ,sql:%v", err, restPk, sql)
 		}
 	}
+
+	reflect.Indirect(reflect.ValueOf(entrySlice)).Set(entriesValue)
 
 	return nil
 }
@@ -130,14 +147,15 @@ func (c CacheHandler) GetEntry(entry schemas.IEntry) (bool, error) {
 	}
 
 	if !has {
-		has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry, entryParams)))
+		_, has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry, entryParams)))
 		c.storeCache(entry)
 	}
 
 	return has, err
 }
 
-func (c CacheHandler) DelEntries(entries []schemas.IEntry, sql string) error {
+func (c CacheHandler) DelEntries(entrySlice interface{}, sql string) error {
+	entries := entrySlice.([]schemas.IEntry)
 	err := c.GetEntries(entries, sql)
 	if err != nil {
 		return err
@@ -150,32 +168,33 @@ func (c CacheHandler) DelEntries(entries []schemas.IEntry, sql string) error {
 }
 
 type EntryCache struct {
-	entry    schemas.IEntry
+	entry    interface{}
 	entryKey string
 }
 
-func (c CacheHandler) storeCache(entries ...schemas.IEntry) {
+func (c CacheHandler) storeCache(entries interface{}) {
 	entryCaches := make([]EntryCache, 0)
-	for _, entry := range entries {
-		_, entryKey, err := schemas.GetEntryKey(entry)
+	entriesValue := reflect.ValueOf(entries)
+	for i := 0; i < entriesValue.Len(); i++ {
+		_, entryKey, err := schemas.GetEntryKey(entriesValue.Index(i).Interface().(schemas.IEntry))
 		if err != nil {
 			continue
 		}
 		entryCaches = append(entryCaches, EntryCache{
-			entry:    entry,
+			entry:    entriesValue.Index(i).Interface().(schemas.IEntry),
 			entryKey: entryKey,
 		})
 	}
 
-	keyValues := make([]keyValue, 0)
+	keyValues := make([]KeyValue, 0)
 	for _, entryCache := range entryCaches {
-		value, err := c.serializer.Serialize(entryCache)
+		value, err := c.serializer.Serialize(&entryCache.entry)
 		if err != nil {
 			c.log.Error("Failed serialize err:%v entry:%v", err, entryCache)
 		}
-		keyValues = append(keyValues, keyValue{
-			key:   entryCache.entryKey,
-			value: value,
+		keyValues = append(keyValues, KeyValue{
+			Key:   entryCache.entryKey,
+			Value: value,
 		})
 	}
 	err := c.cacheHandler.StoreAll(keyValues...)
@@ -189,9 +208,9 @@ func (c CacheHandler) setIdsByCacheSQL(pks schemas.PK, sql string) error {
 	if err != nil {
 		return err
 	}
-	err = c.cacheHandler.StoreAll(keyValue{
-		key:   sql,
-		value: data,
+	err = c.cacheHandler.StoreAll(KeyValue{
+		Key:   sql,
+		Value: data,
 	})
 	return err
 }
