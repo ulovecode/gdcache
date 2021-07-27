@@ -1,15 +1,18 @@
 package schemas
 
+import "reflect"
+
 type IEntry interface {
 	GetTableName() string
 }
 
 type IEntries []IEntry
 
-func GetPKsByEntries(entries []IEntry) (PK, error) {
+func GetPKsByEntries(entries interface{}) (PK, error) {
 	pks := make(PK, 0)
-	for i := 0; i < len(entries); i++ {
-		_, pk, err := GetEntryKey(entries[i])
+	entriesElement := reflect.Indirect(reflect.ValueOf(entries))
+	for i := 0; i < entriesElement.Len(); i++ {
+		_, pk, err := GetEntryKey(reflect.Indirect(entriesElement.Index(i)).Interface().(IEntry))
 		if err != nil {
 			return pks, err
 		}

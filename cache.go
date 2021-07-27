@@ -31,7 +31,7 @@ type ICacheHandler interface {
 	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
 	GetEntries(entrySlice interface{}, sql string) error
 	// GetEntry get a pointer to an entity type and return the entity
-	GetEntry(entry schemas.IEntry) (bool, error)
+	GetEntry(entry interface{}) (bool, error)
 	// DelEntries delete the corresponding execution entity through sql,
 	// Before the update, you can query the id to be deleted first, and then delete these through defer
 	DelEntries(entrySlice interface{}, sql string) error
@@ -132,8 +132,8 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 	return nil
 }
 
-func (c CacheHandler) GetEntry(entry schemas.IEntry) (bool, error) {
-	entryParams, entryKey, err := schemas.GetEntryKey(entry)
+func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
+	entryParams, entryKey, err := schemas.GetEntryKey(entry.(schemas.IEntry))
 	if err != nil {
 		return false, err
 	}
@@ -147,20 +147,20 @@ func (c CacheHandler) GetEntry(entry schemas.IEntry) (bool, error) {
 	}
 
 	if !has {
-		_, has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry, entryParams)))
-		c.storeCache(entry)
+		var entryTemp interface{}
+		entryTemp, has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams)))
+		c.storeCache(reflect.MakeSlice(reflect.SliceOf(reflect.Indirect(reflect.ValueOf(entry)).Type()), 0, 0).Interface())
+		reflect.Indirect(reflect.ValueOf(entry)).Set(reflect.Indirect(reflect.ValueOf(entryTemp)))
 	}
-
 	return has, err
 }
 
 func (c CacheHandler) DelEntries(entrySlice interface{}, sql string) error {
-	entries := entrySlice.([]schemas.IEntry)
-	err := c.GetEntries(entries, sql)
+	err := c.GetEntries(entrySlice, sql)
 	if err != nil {
 		return err
 	}
-	pk, err := schemas.GetPKsByEntries(entries)
+	pk, err := schemas.GetPKsByEntries(entrySlice)
 	if err != nil {
 		return err
 	}
@@ -174,7 +174,7 @@ type EntryCache struct {
 
 func (c CacheHandler) storeCache(entries interface{}) {
 	entryCaches := make([]EntryCache, 0)
-	entriesValue := reflect.ValueOf(entries)
+	entriesValue := reflect.Indirect(reflect.ValueOf(entries))
 	for i := 0; i < entriesValue.Len(); i++ {
 		_, entryKey, err := schemas.GetEntryKey(entriesValue.Index(i).Interface().(schemas.IEntry))
 		if err != nil {
