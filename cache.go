@@ -98,7 +98,8 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 	}
 
 	if len(restPk) > 0 || isNoCacheSQL {
-		emptySlice, err := c.databaseHandler.GetEntries(reflect.MakeSlice(entriesValue.Type(), 0, 0).Interface(), sql)
+		emptyEntry := gdreflect.GetSliceValue(entrySlice)
+		emptySlice, err := c.databaseHandler.GetEntries(emptyEntry, sql)
 		if err != nil {
 			c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
 			return err
