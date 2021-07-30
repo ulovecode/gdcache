@@ -16,7 +16,7 @@ func GetSliceValue(value interface{}) interface{} {
 	} else {
 		v = reflect.ValueOf(value)
 	}
-	typeValue := reflect.TypeOf(v)
+	typeValue := v.Type().Elem()
 	return reflect.New(typeValue).Interface()
 }
 

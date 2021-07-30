@@ -40,7 +40,7 @@ type ICacheHandler interface {
 var _ ICacheHandler = CacheHandler{}
 
 type CacheHandler struct {
-	cacheHandler    ICache
+	CacheHandler    ICache
 	databaseHandler IDB
 	serializer      Serializer
 	log             log.Logger
@@ -65,7 +65,7 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 		o.log = log.DefaultLogger{}
 	}
 
-	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
+	return &CacheHandler{CacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
 }
 
 func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
@@ -77,7 +77,7 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 		c.log.Error("getIdsByCacheSQL err: %v ,sql :%v", err, sql)
 	}
 	var isNoCacheSQL = len(pks) == 0
-	keyValues, err := c.cacheHandler.GetAll(pks)
+	keyValues, err := c.CacheHandler.GetAll(pks)
 	if err != nil {
 		c.log.Error("GetAll err: %v ,sql :%v", err, pks)
 	}
@@ -98,8 +98,11 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 	}
 
 	if len(restPk) > 0 || isNoCacheSQL {
-		emptyEntry := gdreflect.GetSliceValue(entrySlice)
-		emptySlice, err := c.databaseHandler.GetEntries(emptyEntry, sql)
+		slice := reflect.MakeSlice(entriesValue.Type(), 0, 0)
+		value := reflect.New(slice.Type())
+		value.Elem().Set(slice)
+		err := c.databaseHandler.GetEntries(value.Interface(), sql)
+		emptySlice := value.Interface()
 		if err != nil {
 			c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
 			return err
@@ -139,7 +142,7 @@ func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
 		return false, err
 	}
 
-	entryValue, has, err := c.cacheHandler.Get(entryKey)
+	entryValue, has, err := c.CacheHandler.Get(entryKey)
 	if err != nil {
 		c.log.Error("Failed to get data from cache err:%v entryKey:%v", err.Error(), entryKey)
 	}
@@ -148,10 +151,13 @@ func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
 	}
 
 	if !has {
-		var entryTemp interface{}
-		entryTemp, has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams)))
-		c.storeCache(reflect.MakeSlice(reflect.SliceOf(reflect.Indirect(reflect.ValueOf(entry)).Type()), 0, 0).Interface())
-		reflect.Indirect(reflect.ValueOf(entry)).Set(reflect.Indirect(reflect.ValueOf(entryTemp)))
+		has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams)))
+		if has {
+			sliceValue := reflect.MakeSlice(reflect.SliceOf(reflect.Indirect(reflect.ValueOf(entry)).Type()), 0, 0)
+			sliceValue = reflect.Append(sliceValue, reflect.Indirect(reflect.ValueOf(entry)))
+			c.storeCache(sliceValue.Interface())
+		}
+
 	}
 	return has, err
 }
@@ -165,7 +171,7 @@ func (c CacheHandler) DelEntries(entrySlice interface{}, sql string) error {
 	if err != nil {
 		return err
 	}
-	return c.cacheHandler.DeleteAll(pk)
+	return c.CacheHandler.DeleteAll(pk)
 }
 
 type EntryCache struct {
@@ -198,7 +204,7 @@ func (c CacheHandler) storeCache(entries interface{}) {
 			Value: value,
 		})
 	}
-	err := c.cacheHandler.StoreAll(keyValues...)
+	err := c.CacheHandler.StoreAll(keyValues...)
 	if err != nil {
 		c.log.Error("Failed StoreAll err:%v keyValues:%v", err, keyValues)
 	}
@@ -209,7 +215,7 @@ func (c CacheHandler) setIdsByCacheSQL(pks schemas.PK, sql string) error {
 	if err != nil {
 		return err
 	}
-	err = c.cacheHandler.StoreAll(KeyValue{
+	err = c.CacheHandler.StoreAll(KeyValue{
 		Key:   sql,
 		Value: data,
 	})
@@ -218,7 +224,7 @@ func (c CacheHandler) setIdsByCacheSQL(pks schemas.PK, sql string) error {
 
 func (c CacheHandler) getIdsByCacheSQL(sql string) (schemas.PK, error) {
 	pks := make(schemas.PK, 0)
-	ids, has, err := c.cacheHandler.Get(sql)
+	ids, has, err := c.CacheHandler.Get(sql)
 	if !has {
 		return pks, nil
 	}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/ulovecode/gdcache"
 	"github.com/ulovecode/gdcache/schemas"
 )
@@ -56,23 +57,27 @@ func NewMemoryDb() *MemoryDb {
 	return &MemoryDb{}
 }
 
-func (m MemoryDb) GetEntries(entries interface{}, sql string) (interface{}, error) {
+func (m MemoryDb) GetEntries(entries interface{}, sql string) error {
 	mockEntries := make([]MockEntry, 0)
 	mockEntries = append(mockEntries, MockEntry{
 		RelateId:   1,
 		SourceId:   2,
 		PropertyId: 3,
 	})
-	return mockEntries, nil
+	marshal, _ := json.Marshal(mockEntries)
+	json.Unmarshal(marshal, entries)
+	return nil
 }
 
-func (m MemoryDb) GetEntry(entry interface{}, sql string) (interface{}, bool, error) {
-	entry = &MockEntry{
+func (m MemoryDb) GetEntry(entry interface{}, sql string) (bool, error) {
+	mockEntry := &MockEntry{
 		RelateId:   1,
 		SourceId:   2,
 		PropertyId: 3,
 	}
-	return entry, true, nil
+	marshal, _ := json.Marshal(mockEntry)
+	json.Unmarshal(marshal, entry)
+	return true, nil
 }
 
 func NewMemoryCache() *gdcache.CacheHandler {

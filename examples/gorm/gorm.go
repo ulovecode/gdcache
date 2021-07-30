@@ -5,7 +5,6 @@ import (
 	"github.com/ulovecode/gdcache/schemas"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"reflect"
 )
 
 type MemoryCacheHandler struct {
@@ -56,20 +55,17 @@ type GormDB struct {
 	db *gorm.DB
 }
 
-func (g GormDB) GetEntries(entry interface{}, sql string) (interface{}, error) {
-	rows, err := g.db.Raw(sql).Rows()
-	if err != nil {
-		return nil, err
-	}
-	res := make([]interface{}, 0)
-	rows.Scan(entry)
-	res = append(res, entry)
-	return res, err
+func (g GormDB) GetEntries(entries interface{}, sql string) error {
+	tx := g.db.Raw(sql).Find(entries)
+	return tx.Error
 }
 
-func (g GormDB) GetEntry(entry interface{}, sql string) (interface{}, bool, error) {
-	tx := g.db.Raw(sql).Take(reflect.ValueOf(&entry).Elem().Interface())
-	return entry, true, tx.Error
+func (g GormDB) GetEntry(entry interface{}, sql string) (bool, error) {
+	tx := g.db.Raw(sql).Take(entry)
+	if gorm.ErrRecordNotFound == tx.Error {
+		return false, nil
+	}
+	return true, tx.Error
 }
 
 func NewGormCacheHandler() *gdcache.CacheHandler {
@@ -87,7 +83,7 @@ func NewGormDd() gdcache.IDB {
 }
 
 type User struct {
-	Id   uint64 `gorm:"primary_key"`
+	Id   uint64
 	Name string
 	Age  int
 }

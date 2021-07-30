@@ -1,3 +1,3 @@
-module  github.com/ulovecode/gdcache
+module github.com/ulovecode/gdcache
 
 go 1.16
