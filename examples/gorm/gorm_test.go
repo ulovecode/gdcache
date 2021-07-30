@@ -17,7 +17,7 @@ func TestNewGormCache(t *testing.T) {
 	fmt.Printf("%v", user)
 
 	users := make([]User, 0)
-	err = NewGormCacheHandler().GetEntries(&users, "SELECT * FROM user WHERE id in (1,2,4)")
+	err = NewGormCacheHandler().GetEntries(&users, "SELECT * FROM user WHERE name = '33'")
 	if err != nil {
 		panic(err)
 	}
