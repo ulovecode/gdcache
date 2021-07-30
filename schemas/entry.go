@@ -3,7 +3,7 @@ package schemas
 import "reflect"
 
 type IEntry interface {
-	GetTableName() string
+	TableName() string
 }
 
 type IEntries []IEntry

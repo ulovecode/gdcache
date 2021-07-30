@@ -85,6 +85,6 @@ type MockEntry struct {
 	PropertyId int64 `cache:"propertyId"`
 }
 
-func (m MockEntry) GetTableName() string {
+func (m MockEntry) TableName() string {
 	return "public_relation"
 }

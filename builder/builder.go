@@ -11,7 +11,7 @@ func GetEntryByIdSQL(entry schemas.IEntry, entryParams []schemas.EntryKey) strin
 	for _, entryParam := range entryParams {
 		idWhereString = append(idWhereString, fmt.Sprintf(" %s = %s ", entryParam.Name, entryParam.Param))
 	}
-	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.GetTableName(), strings.Join(idWhereString, "AND"))
+	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.TableName(), strings.Join(idWhereString, "AND"))
 }
 
 func GetEntriesByIdSQL(entry schemas.IEntry, entryKeys []schemas.EntryKeys) string {
@@ -23,5 +23,5 @@ func GetEntriesByIdSQL(entry schemas.IEntry, entryKeys []schemas.EntryKeys) stri
 		}
 		idWhereString = append(idWhereString, fmt.Sprintf(`( %s )`, strings.Join(idString, "AND")))
 	}
-	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.GetTableName(), strings.Join(idWhereString, " OR "))
+	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.TableName(), strings.Join(idWhereString, " OR "))
 }
