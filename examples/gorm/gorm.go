@@ -65,7 +65,7 @@ func (g GormDB) GetEntry(entry interface{}, sql string) (bool, error) {
 	if gorm.ErrRecordNotFound == tx.Error {
 		return false, nil
 	}
-	return true, tx.Error
+	return tx.Error != gorm.ErrRecordNotFound, tx.Error
 }
 
 func NewGormCacheHandler() *gdcache.CacheHandler {
@@ -83,9 +83,9 @@ func NewGormDd() gdcache.IDB {
 }
 
 type User struct {
-	Id   uint64
-	Name string
-	Age  int
+	Id   uint64 `cache:"id" json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
 }
 
 func (u User) TableName() string {

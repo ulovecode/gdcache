@@ -1,34 +1,38 @@
 package gorm
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestNewGormCache(t *testing.T) {
 
-	var user = User{
+	handler := NewGormCacheHandler()
+
+	user := User{
 		Id: 1,
 	}
-	_, err := NewGormCacheHandler().GetEntry(&user)
+	has, err := handler.GetEntry(&user)
 	if err != nil {
-		panic(err)
+		t.FailNow()
 	}
-	fmt.Printf("%v", user)
+	if has {
+		t.Logf("%v", user)
+	}
 
 	users := make([]User, 0)
-	err = NewGormCacheHandler().GetEntries(&users, "SELECT * FROM user WHERE name = '33'")
+	err = handler.GetEntries(&users, "SELECT * FROM user WHERE name = '33'")
 	if err != nil {
-		panic(err)
+		t.FailNow()
 	}
 	for _, user := range users {
-		println(user.Id)
+		t.Logf("%v", user)
 	}
-	err = NewGormCacheHandler().GetEntries(&users, "SELECT * FROM user WHERE id in (8)")
+
+	err = handler.GetEntries(&users, "SELECT * FROM user WHERE id in (3)")
 	if err != nil {
-		panic(err)
+		t.FailNow()
 	}
 	for _, user := range users {
-		println(user.Id)
+		t.Logf("%v", user)
 	}
 }

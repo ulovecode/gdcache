@@ -55,12 +55,12 @@ type XormDB struct {
 	db *xorm.Engine
 }
 
-func (g XormDB) GetEntries(entries interface{}, sql string) ( error) {
+func (g XormDB) GetEntries(entries interface{}, sql string) error {
 	err := g.db.SQL(sql).Find(entries)
-	return  err
+	return err
 }
 
-func (g XormDB) GetEntry(entry interface{}, sql string) ( bool, error) {
+func (g XormDB) GetEntry(entry interface{}, sql string) (bool, error) {
 	has, err := g.db.SQL(sql).Get(entry)
 	return has, err
 }
@@ -80,9 +80,9 @@ func NewXormDd() gdcache.IDB {
 }
 
 type User struct {
-	Id   uint64
-	Name string
-	Age  int
+	Id   uint64 `cache:"id" json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
 }
 
 func (u User) TableName() string {
