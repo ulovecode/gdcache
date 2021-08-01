@@ -91,6 +91,8 @@ github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJy
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/ulovecode/gdcache v0.1.4 h1:/hRt1Z83fWgApmOmHMu1lxf/oBEMmSf+p7nkvJewT0k=
 github.com/ulovecode/gdcache v0.1.4/go.mod h1:UDliucz2jG6PK24uDJ48Vl+e2eqbubgc7pWeY18n+6c=
+github.com/ulovecode/gdcache v0.1.5-0.20210730160918-e66cae5a4907 h1:YNMOjXjcvNmSPwQdosidK9E+/InWKF4x10T6edCfad4=
+github.com/ulovecode/gdcache v0.1.5-0.20210730160918-e66cae5a4907/go.mod h1:UDliucz2jG6PK24uDJ48Vl+e2eqbubgc7pWeY18n+6c=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 go.opencensus.io v0.20.1/go.mod h1:6WKK9ahsWS3RSO+PY9ZHZUfv2irvY6gN279GOPZjmmk=
