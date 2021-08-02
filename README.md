@@ -55,7 +55,7 @@ go get github.com/ulovecode/gdcache
 
 ## Quick Start
 
--The class to be cached must implement the `TableName()` method, and use `cache:"id"` to indicate the cached key. The default is to cache by `id`, and the value of the `cache` tag corresponds to Fields in the database, usually can be ignored.
+- The class to be cached must implement the `TableName()` method, and use `cache:"id"` to indicate the cached key. The default is to cache by `id`, and the value of the `cache` tag corresponds to Fields in the database, usually can be ignored.
 
 ```go
 type User struct {
