@@ -1,0 +1,43 @@
+name: release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags')
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: set GOVERSION
+        run: echo "GOVERSION=$(go version | sed -r 's/go version go(.*)\ .*/\1/')" >> $GITHUB_ENV
+      - name: set GdcacheVersion
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: show version
+        run: echo ${{ env.GOVERSION }} ${{ env.VERSION }}
+
+      - name: check headcommit message
+        id: commit
+        run: |
+          str="$(jq '.head_commit.message' $GITHUB_EVENT_PATH)"    # get the head_commit message
+          echo ::set-output name=title::${str%%\\n*} | tr -d '"'         # get the title
+          echo ::set-output name=body::${str##*\\n} | tr -d '"'         # get the body
+      - name: check value # confirm the value for check, you can ignore it.
+        run: |
+          echo ${{ steps.commit.outputs.title}}    
+          echo ${{ steps.commit.outputs.body}}
+      - name: run releaser
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
+          body: ${{ steps.commit.outputs.body}}
+          draft: false
+          prerelease: false

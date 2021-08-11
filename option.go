@@ -25,5 +25,5 @@ func WithLogger(logger log.Logger) OptionsFunc {
 func WithSerializer(serializer Serializer) OptionsFunc {
 	return func(o *Options) {
 		o.serializer = serializer
-	}
+	} 
 }
