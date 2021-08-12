@@ -98,15 +98,38 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 	}
 
 	if len(restPk) > 0 || isNoCacheSQL {
-		slice := reflect.MakeSlice(entriesValue.Type(), 0, 0)
-		value := reflect.New(slice.Type())
-		value.Elem().Set(slice)
-		err := c.databaseHandler.GetEntries(value.Interface(), sql)
-		emptySlice := value.Interface()
-		if err != nil {
-			c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
-			return err
+		value := gdreflect.MakePointerSliceValue(entriesValue)
+
+		if isNoCacheSQL {
+			err = c.databaseHandler.GetEntries(value.Interface(), sql)
+			if err != nil {
+				c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
+				return err
+			}
+			pks, err = schemas.GetPKsByEntries(value.Interface())
+			if err != nil {
+				c.log.Error("GetPKsByEntries err:%v , restPk:%v ,sql:%v", err, restPk, sql)
+			}
+			err = c.setIdsByCacheSQL(pks, sql)
+			if err != nil {
+				c.log.Error("setIdsByCacheSQL err:%v , restPk:%v ,sql:%v", err, restPk, sql)
+			}
+		} else {
+			if entryElementType.Kind() == reflect.Ptr {
+				entryElementType = entryElementType.Elem()
+			}
+			entry := reflect.New(entryElementType)
+
+			sql = builder.GetEntriesByIdSQL(entry.Interface().(schemas.IEntry), pks.ToEntryKeys())
+			err = c.databaseHandler.GetEntries(value.Interface(), sql)
+			if err != nil {
+				c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
+				return err
+			}
+			value = c.sort(value, pks)
 		}
+
+		emptySlice := value.Interface()
 
 		var res interface{}
 		if gdreflect.IsPointerElement(entriesValue.Interface()) && !gdreflect.IsPointerElement(emptySlice) {
@@ -121,13 +144,6 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
 		if res != nil && resValue.Len() > 0 {
 			entriesValue = reflect.AppendSlice(entriesValue, resValue)
 			c.storeCache(entriesValue.Interface())
-		}
-	}
-
-	if isNoCacheSQL {
-		err = c.setIdsByCacheSQL(restPk, sql)
-		if err != nil {
-			c.log.Error("setIdsByCacheSQL err:%v , restPk:%v ,sql:%v", err, restPk, sql)
 		}
 	}
 
@@ -233,4 +249,22 @@ func (c CacheHandler) getIdsByCacheSQL(sql string) (schemas.PK, error) {
 	}
 	err = c.serializer.Deserialize(ids, &pks)
 	return pks, err
+}
+
+func (c CacheHandler) sort(entriesValue reflect.Value, pks schemas.PK) reflect.Value {
+	entriesValue = reflect.Indirect(entriesValue)
+	tempSliceValue := gdreflect.MakePointerSliceValue(entriesValue)
+	set := make(map[string]reflect.Value)
+	for i := 0; i < entriesValue.Len(); i++ {
+		entry := entriesValue.Index(i).Interface()
+		_, key, _ := schemas.GetEntryKey(entry.(schemas.IEntry))
+		set[key] = entriesValue.Index(i)
+	}
+
+	for _, pk := range pks {
+		if value, ok := set[pk]; ok {
+			tempSliceValue = reflect.Append(reflect.Indirect(tempSliceValue), value)
+		}
+	}
+	return tempSliceValue
 }

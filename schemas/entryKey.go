@@ -24,7 +24,7 @@ func (es EntryKeys) GetEntryKey() string {
 		keyTemplate = append(keyTemplate, fmt.Sprintf("[%s", e.Name)+":%s]")
 		entryKeyNames = append(entryKeyNames, e.Param)
 	}
-	return fmt.Sprintf(strings.Join(keyTemplate, ":"), entryKeyNames...)
+	return fmt.Sprintf(strings.Join(keyTemplate, "-"), entryKeyNames...)
 }
 
 // GetEntryKey get the cache primary Name, if not, find the default value field as id

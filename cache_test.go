@@ -23,7 +23,7 @@ func TestEntryKeys_GetEntryKey(t *testing.T) {
 					Param: "Shanghai",
 				},
 			},
-			want: "[Name:Peter]:[City:Shanghai]",
+			want: "[Name:Peter]-[City:Shanghai]",
 		},
 		{
 			name: "",

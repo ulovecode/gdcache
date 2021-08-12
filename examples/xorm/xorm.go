@@ -74,6 +74,7 @@ func NewXormDd() gdcache.IDB {
 	if err != nil {
 		panic(err)
 	}
+	db.ShowSQL(true)
 	return XormDB{
 		db: db,
 	}
@@ -87,4 +88,14 @@ type User struct {
 
 func (u User) TableName() string {
 	return "user"
+}
+
+type MockEntry struct {
+	RelateId   int64 `xorm:"relateId" cache:"relateId"`
+	SourceId   int64 `xorm:"sourceId"  cache:"sourceId"`
+	PropertyId int64 `xorm:"propertyId"  cache:"propertyId"`
+}
+
+func (m MockEntry) TableName() string {
+	return "public_relation"
 }

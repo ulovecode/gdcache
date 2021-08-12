@@ -38,3 +38,10 @@ func CovertSliceStructValue2PointerValue(sliceInterface interface{}) interface{}
 	}
 	return newSlice.Interface()
 }
+
+func MakePointerSliceValue(entriesValue reflect.Value) reflect.Value {
+	slice := reflect.MakeSlice(reflect.Indirect(entriesValue).Type(), 0, 0)
+	value := reflect.New(slice.Type())
+	value.Elem().Set(slice)
+	return value
+}

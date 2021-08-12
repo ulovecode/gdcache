@@ -12,7 +12,7 @@ type MockEntry struct {
 	PropertyId int64 `cache:"propertyId"`
 }
 
-func (m MockEntry) GetTableName() string {
+func (m MockEntry) TableName() string {
 	return "public_relation"
 }
 
@@ -23,7 +23,7 @@ type MockEntry2 struct {
 	PropertyId int64
 }
 
-func (m MockEntry2) GetTableName() string {
+func (m MockEntry2) TableName() string {
 	return "public_relation"
 }
 
