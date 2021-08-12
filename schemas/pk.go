@@ -20,6 +20,7 @@ func (pk PK) ToEntryKeys() []EntryKeys {
 				Param: value,
 			})
 		}
+		entryKeys = append(entryKeys, entryKey)
 	}
 	return entryKeys
 }
