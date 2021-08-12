@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var ServiceName string
+
 type EntryKey struct {
 	Name  string
 	Param string
@@ -24,7 +26,7 @@ func (es EntryKeys) GetEntryKey(entryName string) string {
 		keyTemplate = append(keyTemplate, fmt.Sprintf("[%s", e.Name)+":%s]")
 		entryKeyNames = append(entryKeyNames, e.Param)
 	}
-	return fmt.Sprintf(entryName+"#"+strings.Join(keyTemplate, "-"), entryKeyNames...)
+	return fmt.Sprintf(ServiceName+"_"+entryName+"#"+strings.Join(keyTemplate, "-"), entryKeyNames...)
 }
 
 // GetEntryKey get the cache primary Name, if not, find the default value field as id

@@ -64,7 +64,7 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 	if o.log == nil {
 		o.log = log.DefaultLogger{}
 	}
-
+	schemas.ServiceName = o.serviceName
 	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
 }
 

@@ -6,9 +6,16 @@ type Options struct {
 	cacheTagName string
 	log          log.Logger
 	serializer   Serializer
+	serviceName  string
 }
 
 type OptionsFunc func(o *Options)
+
+func WithServiceName(serviceName string) OptionsFunc {
+	return func(o *Options) {
+		o.serviceName = serviceName
+	}
+}
 
 func WithCacheTagName(cacheTagName string) OptionsFunc {
 	return func(o *Options) {
@@ -25,5 +32,5 @@ func WithLogger(logger log.Logger) OptionsFunc {
 func WithSerializer(serializer Serializer) OptionsFunc {
 	return func(o *Options) {
 		o.serializer = serializer
-	} 
+	}
 }
