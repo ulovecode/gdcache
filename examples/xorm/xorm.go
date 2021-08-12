@@ -93,7 +93,7 @@ func (u User) TableName() string {
 type MockEntry struct {
 	RelateId   int64 `xorm:"relateId" cache:"relateId"`
 	SourceId   int64 `xorm:"sourceId"  cache:"sourceId"`
-	PropertyId int64 `xorm:"propertyId"  cache:"propertyId"`
+	PropertyId int64 `xorm:"propertyId"  `
 }
 
 func (m MockEntry) TableName() string {

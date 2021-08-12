@@ -15,7 +15,7 @@ type EntryKey struct {
 
 type EntryKeys []EntryKey
 
-func (es EntryKeys) GetEntryKey() string {
+func (es EntryKeys) GetEntryKey(entryName string) string {
 	var (
 		keyTemplate   = make([]string, 0)
 		entryKeyNames = make([]interface{}, 0)
@@ -24,7 +24,7 @@ func (es EntryKeys) GetEntryKey() string {
 		keyTemplate = append(keyTemplate, fmt.Sprintf("[%s", e.Name)+":%s]")
 		entryKeyNames = append(entryKeyNames, e.Param)
 	}
-	return fmt.Sprintf(strings.Join(keyTemplate, "-"), entryKeyNames...)
+	return fmt.Sprintf(entryName+"#"+strings.Join(keyTemplate, "-"), entryKeyNames...)
 }
 
 // GetEntryKey get the cache primary Name, if not, find the default value field as id
@@ -58,7 +58,7 @@ func GetEntryKey(entry IEntry) ([]EntryKey, string, error) {
 			Name:  "id",
 			Param: fmt.Sprint(param),
 		})
-		return entryKeys, entryKeys.GetEntryKey(), nil
+		return entryKeys, entryKeys.GetEntryKey(entryValue.Type().String()), nil
 	}
 
 	for _, tagField := range tagSortFields {
@@ -68,5 +68,5 @@ func GetEntryKey(entry IEntry) ([]EntryKey, string, error) {
 			Param: fmt.Sprint(fieldValue.Interface()),
 		})
 	}
-	return entryKeys, entryKeys.GetEntryKey(), nil
+	return entryKeys, entryKeys.GetEntryKey(entryValue.Type().String()), nil
 }

@@ -9,7 +9,8 @@ func (pk PK) ToEntryKeys() []EntryKeys {
 	entryKeys := make([]EntryKeys, 0)
 	for _, p := range pk {
 		entryKey := make([]EntryKey, 0)
-		keyValues := strings.Split(p, "-")
+		entryKeyString := strings.SplitN(p, "#", 2)
+		keyValues := strings.Split(entryKeyString[1], "-")
 		for _, keyValue := range keyValues {
 			keyValuesString := keyValue[1 : len(keyValue)-1]
 			keyValueArray := strings.Split(keyValuesString, ":")
