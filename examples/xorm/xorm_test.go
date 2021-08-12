@@ -44,4 +44,19 @@ func TestNewXormCache(t *testing.T) {
 	for _, user := range users2 {
 		t.Logf("%v", user)
 	}
+	mockEntries := make([]MockEntry, 0)
+	err = handler.GetEntries(&mockEntries, "SELECT * FROM public_relation where relateId = 1")
+	if err != nil {
+		t.FailNow()
+	}
+	for _, m := range mockEntries {
+		t.Logf("%v", m)
+	}
+	err = handler.GetEntries(&mockEntries, "SELECT * FROM public_relation where relateId = 1")
+	if err != nil {
+		t.FailNow()
+	}
+	for _, m := range mockEntries {
+		t.Logf("%v", m)
+	}
 }
