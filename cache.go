@@ -29,7 +29,7 @@ type ICache interface {
 
 type ICacheHandler interface {
 	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
-	GetEntries(entrySlice interface{}, sql string) error
+	GetEntries(entrySlice interface{}, sql string, args ...interface{}) error
 	// GetEntry get a pointer to an entity type and return the entity
 	GetEntry(entry interface{}) (bool, error)
 	// DelEntries delete the corresponding execution entity through sql,
@@ -68,8 +68,8 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
 }
 
-func (c CacheHandler) GetEntries(entrySlice interface{}, sql string) error {
-
+func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...interface{}) error {
+	sql = builder.GenerateSql(sql, args)
 	entriesValue := reflect.Indirect(reflect.ValueOf(entrySlice))
 	entryElementType := entriesValue.Type().Elem()
 	pks, err := c.getIdsByCacheSQL(sql)

@@ -3,6 +3,7 @@ package builder
 import (
 	"fmt"
 	"github.com/ulovecode/gdcache/schemas"
+	"reflect"
 	"strings"
 )
 
@@ -24,4 +25,20 @@ func GetEntriesByIdSQL(entry schemas.IEntry, entryKeys []schemas.EntryKeys) stri
 		idWhereString = append(idWhereString, fmt.Sprintf(`( %s )`, strings.Join(idString, "AND")))
 	}
 	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.TableName(), strings.Join(idWhereString, " OR "))
+}
+
+func GenerateSql(sql string, args ...interface{}) string {
+	params := make([]interface{}, 0)
+	for _, arg := range args {
+		if reflect.ValueOf(arg).Kind() == reflect.Ptr {
+			arg = reflect.ValueOf(arg).Elem()
+		}
+		if reflect.ValueOf(arg).Kind() == reflect.Slice {
+			argSQL := fmt.Sprint(arg)
+			arg = "(" + strings.Replace(argSQL[1:len(argSQL)-1], " ", ",", -1) + ")"
+		}
+		params = append(params, fmt.Sprint(arg))
+	}
+	sql = strings.Replace(sql, "?", "%s", -1)
+	return fmt.Sprintf(sql, params...)
 }

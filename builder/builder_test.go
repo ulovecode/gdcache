@@ -127,3 +127,47 @@ func TestGetEntriesByIdSQL(t *testing.T) {
 		})
 	}
 }
+
+func TestFmtSql(t *testing.T) {
+	type args struct {
+		sql  string
+		args []interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "",
+			args: args{
+				sql:  "SELECT * FROM spu WHERE id = ?",
+				args: []interface{}{1},
+			},
+			want: "",
+		},
+		{
+			name: "",
+			args: args{
+				sql:  "SELECT * FROM spu WHERE id in ?",
+				args: []interface{}{[]string{"1", "2"}},
+			},
+			want: "",
+		},
+		{
+			name: "",
+			args: args{
+				sql:  "SELECT * FROM spu WHERE id =  ? and id = ? limit ?,?",
+				args: []interface{}{1, "2", 0, 10},
+			},
+			want: "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GenerateSql(tt.args.sql, tt.args.args...); got != tt.want {
+				t.Errorf("GenerateSql() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
