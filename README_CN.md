@@ -244,7 +244,7 @@ func NewMemoryCache() *gdcache.CacheHandler {
 
 ## 如何使用
 
-查询单个实体的时候通过实体的 id 查询，并填充到实体中,获取多个实体的时候，可以通过任意的 sql 查询，并最终填充到实体中。两个方法必须传入实体的脂针。
+查询单个实体的时候通过实体的 id 查询，并填充到实体中,获取多个实体的时候，可以通过任意的 sql 查询，并最终填充到实体中。两个方法必须传入实体的指针。
 
 ```go
 func TestNewGormCache(t *testing.T) {

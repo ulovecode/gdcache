@@ -245,7 +245,7 @@ func NewMemoryCache() *gdcache.CacheHandler {
 
 ## How to use
 
-When querying a single entity, query through the entity's id and fill it into the entity. When getting multiple entities, you can use any sql query and finally fill it into the entity. Both methods must be introduced into the body's fat needle.
+When querying a single entity, query through the entity's id and fill it into the entity. When getting multiple entities, you can use any sql query and finally fill it into the entity. Both methods must be introduced into the body's pointer.
 ```go
 func TestNewGormCache(t *testing.T) {
 
