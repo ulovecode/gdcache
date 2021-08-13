@@ -1,7 +1,6 @@
 package gdcache
 
 import (
-	"fmt"
 	"github.com/ulovecode/gdcache/builder"
 	"github.com/ulovecode/gdcache/log"
 	gdreflect "github.com/ulovecode/gdcache/reflect"
@@ -25,6 +24,13 @@ type ICache interface {
 	Get(key string) (data []byte, has bool, err error)
 	GetAll(keys schemas.PK) (data []ReturnKeyValue, err error)
 	DeleteAll(keys schemas.PK) error
+}
+
+type IDB interface {
+	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
+	GetEntries(entries interface{}, sql string) error
+	// GetEntry get a pointer to an entity type and return the entity
+	GetEntry(entry interface{}, sql string) (bool, error)
 }
 
 type ICacheHandler interface {
@@ -165,9 +171,8 @@ func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
 	if has {
 		err = c.serializer.Deserialize(entryValue, entry)
 	}
-
 	if !has {
-		has, err = c.databaseHandler.GetEntry(entry, fmt.Sprintf(builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams)))
+		has, err = c.databaseHandler.GetEntry(entry, builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams))
 		if has {
 			sliceValue := reflect.MakeSlice(reflect.SliceOf(reflect.Indirect(reflect.ValueOf(entry)).Type()), 0, 0)
 			sliceValue = reflect.Append(sliceValue, reflect.Indirect(reflect.ValueOf(entry)))
