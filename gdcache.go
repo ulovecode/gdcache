@@ -75,7 +75,7 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 }
 
 func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...interface{}) error {
-	sql = builder.GenerateSql(sql, args)
+	sql = builder.GenerateSql(sql, args...)
 	entriesValue := reflect.Indirect(reflect.ValueOf(entrySlice))
 	entryElementType := entriesValue.Type().Elem()
 	pks, err := c.getIdsByCacheSQL(sql)
