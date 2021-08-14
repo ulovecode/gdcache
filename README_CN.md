@@ -278,8 +278,18 @@ func TestNewGormCache(t *testing.T) {
 	for _, user := range users {
 		t.Logf("%v", user)
 	}
+	
+        count, err = handler.GetEntriesAndCount(&users1, "SELECT * FROM user WHERE id in (1,2)")
+        if err != nil {
+        t.FailNow()
+        }
+        for _, user := range users1 {
+        t.Logf("%v", user)
+        }
+        t.Log(count)
 }
 ```
+
 
 ## 贡献
 
