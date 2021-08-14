@@ -59,4 +59,22 @@ func TestNewXormCache(t *testing.T) {
 	for _, m := range mockEntries {
 		t.Logf("%v", m)
 	}
+	var count int64
+	count, err = handler.GetEntriesAndCount(&users1, "SELECT * FROM user WHERE id in (1,2) LIMIT 0,1")
+	if err != nil {
+		t.FailNow()
+	}
+	for _, user := range users1 {
+		t.Logf("%v", user)
+	}
+	t.Log(count)
+
+	count, err = handler.GetEntriesAndCount(&users1, "SELECT * FROM user WHERE id in (1,2)")
+	if err != nil {
+		t.FailNow()
+	}
+	for _, user := range users1 {
+		t.Logf("%v", user)
+	}
+	t.Log(count)
 }
