@@ -42,3 +42,17 @@ func GenerateSql(sql string, args ...interface{}) string {
 	sql = strings.Replace(sql, "?", "%s", -1)
 	return fmt.Sprintf(sql, params...)
 }
+
+func GenerateCountSql(sql string, args ...interface{}) string {
+	sql = GenerateSql(sql, args...)
+	var indexOf int
+	findSql := strings.ToUpper(sql)
+	indexOf = strings.LastIndex(findSql, "LIMIT")
+	if indexOf != -1 {
+		s := sql[indexOf:]
+		if !strings.ContainsAny(s, ")") {
+			sql = sql[:indexOf]
+		}
+	}
+	return fmt.Sprintf(`SELECT COUNT(*) FROM (%s) t`, sql)
+}

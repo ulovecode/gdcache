@@ -1,12 +1,14 @@
 package gdcache
 
 import (
+	"fmt"
 	"github.com/ulovecode/gdcache/builder"
 	"github.com/ulovecode/gdcache/log"
 	gdreflect "github.com/ulovecode/gdcache/reflect"
 	"github.com/ulovecode/gdcache/schemas"
 	"github.com/ulovecode/gdcache/tag"
 	"reflect"
+	"strconv"
 )
 
 type ReturnKeyValue struct {
@@ -34,13 +36,15 @@ type IDB interface {
 }
 
 type ICacheHandler interface {
-	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
-	GetEntries(entrySlice interface{}, sql string, args ...interface{}) error
 	// GetEntry get a pointer to an entity type and return the entity
 	GetEntry(entry interface{}) (bool, error)
+	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
+	GetEntries(entrySlice interface{}, sql string, args ...interface{}) error
+	// GetEntriesAndCount  cache the entity content obtained through sql, and return the entity of the array pointer type, and return the total quantity
+	GetEntriesAndCount(entries interface{}, sql string, args ...interface{}) (int64, error)
 	// DelEntries delete the corresponding execution entity through sql,
 	// Before the update, you can query the id to be deleted first, and then delete these through defer
-	DelEntries(entrySlice interface{}, sql string) error
+	DelEntries(entrySlice interface{}, sql string, args ...interface{}) error
 }
 
 var _ ICacheHandler = CacheHandler{}
@@ -72,6 +76,31 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 	}
 	schemas.ServiceName = o.serviceName
 	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
+}
+
+func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
+	entryParams, entryKey, err := schemas.GetEntryKey(entry.(schemas.IEntry))
+	if err != nil {
+		return false, err
+	}
+
+	entryValue, has, err := c.cacheHandler.Get(entryKey)
+	if err != nil {
+		c.log.Error("Failed to get data from cache err:%v entryKey:%v", err.Error(), entryKey)
+	}
+	if has {
+		err = c.serializer.Deserialize(entryValue, entry)
+	}
+	if !has {
+		has, err = c.databaseHandler.GetEntry(entry, builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams))
+		if has {
+			sliceValue := reflect.MakeSlice(reflect.SliceOf(reflect.Indirect(reflect.ValueOf(entry)).Type()), 0, 0)
+			sliceValue = reflect.Append(sliceValue, reflect.Indirect(reflect.ValueOf(entry)))
+			c.storeCache(sliceValue.Interface())
+		}
+
+	}
+	return has, err
 }
 
 func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...interface{}) error {
@@ -158,32 +187,42 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...int
 	return nil
 }
 
-func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
-	entryParams, entryKey, err := schemas.GetEntryKey(entry.(schemas.IEntry))
+func (c CacheHandler) GetEntriesAndCount(entries interface{}, sql string, args ...interface{}) (int64, error) {
+	var (
+		err   error
+		count int64
+	)
+
+	err = c.GetEntries(entries, sql, args...)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 
-	entryValue, has, err := c.cacheHandler.Get(entryKey)
-	if err != nil {
-		c.log.Error("Failed to get data from cache err:%v entryKey:%v", err.Error(), entryKey)
-	}
+	countSql := builder.GenerateCountSql(sql)
+	data, has, err := c.cacheHandler.Get(countSql)
+
 	if has {
-		err = c.serializer.Deserialize(entryValue, entry)
-	}
-	if !has {
-		has, err = c.databaseHandler.GetEntry(entry, builder.GetEntryByIdSQL(entry.(schemas.IEntry), entryParams))
-		if has {
-			sliceValue := reflect.MakeSlice(reflect.SliceOf(reflect.Indirect(reflect.ValueOf(entry)).Type()), 0, 0)
-			sliceValue = reflect.Append(sliceValue, reflect.Indirect(reflect.ValueOf(entry)))
-			c.storeCache(sliceValue.Interface())
+		count, err = strconv.ParseInt(string(data), 10, 64)
+	} else {
+		_, err = c.databaseHandler.GetEntry(&count, countSql)
+		if err != nil {
+			return 0, nil
 		}
 
+		err = c.cacheHandler.StoreAll(KeyValue{
+			Key:   countSql,
+			Value: []byte(fmt.Sprint(count)),
+		})
+		if err != nil {
+			return 0, err
+		}
 	}
-	return has, err
+
+	return count, nil
 }
 
-func (c CacheHandler) DelEntries(entrySlice interface{}, sql string) error {
+func (c CacheHandler) DelEntries(entrySlice interface{}, sql string, args ...interface{}) error {
+	sql = builder.GenerateSql(sql, args...)
 	err := c.GetEntries(entrySlice, sql)
 	if err != nil {
 		return err
