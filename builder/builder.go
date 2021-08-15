@@ -28,6 +28,9 @@ func GetEntriesByIdSQL(entry schemas.IEntry, entryKeys []schemas.EntryKeys) stri
 }
 
 func GenerateSql(sql string, args ...interface{}) string {
+	if len(args) == 0 {
+		return sql
+	}
 	params := make([]interface{}, 0)
 	for _, arg := range args {
 		if reflect.ValueOf(arg).Kind() == reflect.Ptr {

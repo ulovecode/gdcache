@@ -198,7 +198,7 @@ func (c CacheHandler) GetEntriesAndCount(entries interface{}, sql string, args .
 		return 0, err
 	}
 
-	countSql := builder.GenerateCountSql(sql)
+	countSql := builder.GenerateCountSql(sql, args...)
 	data, has, err := c.cacheHandler.Get(countSql)
 
 	if has {
