@@ -3,7 +3,6 @@ package gdcache
 import (
 	"fmt"
 	"github.com/ulovecode/gdcache/builder"
-	"github.com/ulovecode/gdcache/log"
 	gdreflect "github.com/ulovecode/gdcache/reflect"
 	"github.com/ulovecode/gdcache/schemas"
 	"github.com/ulovecode/gdcache/tag"
@@ -53,7 +52,7 @@ type CacheHandler struct {
 	cacheHandler    ICache
 	databaseHandler IDB
 	serializer      Serializer
-	log             log.Logger
+	log             Logger
 }
 
 func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...OptionsFunc) *CacheHandler {
@@ -72,7 +71,7 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 	}
 
 	if o.log == nil {
-		o.log = log.DefaultLogger{}
+		o.log = DefaultLogger{}
 	}
 	schemas.ServiceName = o.serviceName
 	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}

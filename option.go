@@ -1,10 +1,8 @@
 package gdcache
 
-import "github.com/ulovecode/gdcache/log"
-
 type Options struct {
 	cacheTagName string
-	log          log.Logger
+	log          Logger
 	serializer   Serializer
 	serviceName  string
 }
@@ -23,7 +21,7 @@ func WithCacheTagName(cacheTagName string) OptionsFunc {
 	}
 }
 
-func WithLogger(logger log.Logger) OptionsFunc {
+func WithLogger(logger Logger) OptionsFunc {
 	return func(o *Options) {
 		o.log = logger
 	}
