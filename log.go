@@ -2,7 +2,6 @@ package gdcache
 
 import (
 	"fmt"
-	"log"
 )
 
 type Logger interface {
@@ -16,17 +15,17 @@ type DefaultLogger struct {
 }
 
 func (d DefaultLogger) Info(format string, a ...interface{}) {
-	log.Default().Print(fmt.Sprintf(format, a))
+	fmt.Print(fmt.Sprintf(format, a))
 }
 
 func (d DefaultLogger) Error(format string, a ...interface{}) {
-	log.Default().Print(fmt.Sprintf(format, a))
+	fmt.Print(fmt.Sprintf(format, a))
 }
 
 func (d DefaultLogger) Debug(format string, a ...interface{}) {
-	log.Default().Print(fmt.Sprintf(format, a))
+	fmt.Print(fmt.Sprintf(format, a))
 }
 
 func (d DefaultLogger) Warn(format string, a ...interface{}) {
-	log.Default().Print(fmt.Sprintf(format, a))
+	fmt.Print(fmt.Sprintf(format, a))
 }
