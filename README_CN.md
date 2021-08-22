@@ -18,7 +18,7 @@
 
 # gdcache
 
-gdcache 是一个由 golang 实现的纯非侵入式分布式缓存库，你可以用它来实现你自己的分布式缓存。 [英文文档](https://github.com/ulovecode/gdcache/blob/main/README.md)
+gdcache 是一个由 golang 实现的纯非侵入式缓存库，你可以用它来实现你自己的缓存。 [英文文档](https://github.com/ulovecode/gdcache/blob/main/README.md)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ulovecode/gdcache)](https://goreportcard.com/report/github.com/ulovecode/gdcache)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/ulovecode/gdcache)](https://pkg.go.dev/github.com/ulovecode/gdcache)
