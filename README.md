@@ -18,7 +18,7 @@
 
 # gdcache
 
-gdcache is a pure non-intrusive distributed cache library implemented by golang, you can use it to implement your own
+gdcache is a pure non-intrusive cache library implemented by golang, you can use it to implement your own
 distributed cache. [中文文档](https://github.com/ulovecode/gdcache/blob/main/README_CN.md)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ulovecode/gdcache)](https://goreportcard.com/report/github.com/ulovecode/gdcache)
