@@ -33,10 +33,19 @@ func GenerateSql(sql string, args ...interface{}) string {
 	}
 	params := make([]interface{}, 0)
 	for _, arg := range args {
-		if reflect.ValueOf(arg).Kind() == reflect.Ptr {
-			arg = reflect.ValueOf(arg).Elem()
+		argValue := reflect.ValueOf(arg)
+		if argValue.Kind() == reflect.Ptr {
+			if argValue.IsNil() {
+				params = append(params, fmt.Sprintf(" ( 1 = 1 ) "))
+				continue
+			}
+			arg = argValue.Elem()
 		}
-		if reflect.ValueOf(arg).Kind() == reflect.Slice {
+		if argValue.Kind() == reflect.Slice {
+			if argValue.Len() == 0 {
+				params = append(params, fmt.Sprintf(" ( 1 != 1 ) "))
+				continue
+			}
 			argSQL := fmt.Sprint(arg)
 			arg = "(" + strings.Replace(argSQL[1:len(argSQL)-1], " ", ",", -1) + ")"
 		}
