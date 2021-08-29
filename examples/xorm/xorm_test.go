@@ -89,7 +89,7 @@ func TestNewXormCache(t *testing.T) {
 	}
 	t.Log(count)
 
-	count, err = handler.GetEntriesAndCount(&users1, "SELECT * FROM user WHERE id =  ?", 1)
+	count, err = handler.GetEntriesAndCount(&users1, "SELECT * FROM user WHERE id =  ?", nil)
 	if err != nil {
 		t.FailNow()
 	}
