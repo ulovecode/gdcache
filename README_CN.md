@@ -290,6 +290,7 @@ func TestNewGormCache(t *testing.T) {
 }
 ```
 
+支持占位符`?`,替换数组和基本类型
 
 ## 贡献
 
