@@ -33,10 +33,26 @@ func GenerateSql(sql string, args ...interface{}) string {
 	}
 	params := make([]interface{}, 0)
 	for _, arg := range args {
-		if reflect.ValueOf(arg).Kind() == reflect.Ptr {
-			arg = reflect.ValueOf(arg).Elem()
+		definitelyNotEqualString := fmt.Sprintf(" ( 1 != 1 ) ")
+		if arg == nil {
+			params = append(params, definitelyNotEqualString)
+			continue
 		}
-		if reflect.ValueOf(arg).Kind() == reflect.Slice {
+
+		argValue := reflect.ValueOf(arg)
+		if argValue.Kind() == reflect.Ptr {
+			if argValue.IsNil() {
+				params = append(params, definitelyNotEqualString)
+				continue
+			}
+			arg = argValue.Elem()
+		}
+
+		if argValue.Kind() == reflect.Slice {
+			if argValue.Len() == 0 {
+				params = append(params, definitelyNotEqualString)
+				continue
+			}
 			argSQL := fmt.Sprint(arg)
 			arg = "(" + strings.Replace(argSQL[1:len(argSQL)-1], " ", ",", -1) + ")"
 		}
