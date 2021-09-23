@@ -83,3 +83,113 @@ func TestCovertSliceStructValue2PointerValue(t *testing.T) {
 		fmt.Printf("%v", mockEntries[i])
 	}
 }
+
+func TestIsPointerElement(t *testing.T) {
+	structEntries := make([]MockEntry, 0)
+	pointerEntries := make([]*MockEntry, 0)
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "",
+			args: args{
+				value: &structEntries,
+			},
+			want: false,
+		},
+		{
+			name: "",
+			args: args{
+				value: &pointerEntries,
+			},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsPointerElementSlice(tt.args.value); got != tt.want {
+				t.Errorf("IsPointerElementSlice() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetSliceValue1(t *testing.T) {
+	structEntries := make([]MockEntry, 0)
+	pointerEntries := make([]*MockEntry, 0)
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "structEntries",
+			args: args{
+				value: &structEntries,
+			},
+		},
+		{
+			name: "pointerEntries",
+			args: args{
+				value: &pointerEntries,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetSliceValue(tt.args.value)
+			if tt.name == "structEntries" {
+				if _, ok := got.(MockEntry); ok {
+					t.Errorf("GetSliceValue() = %v", got)
+				}
+			}
+			if tt.name == "pointerEntries" {
+				if _, ok := got.(*MockEntry); ok {
+					t.Errorf("GetSliceValue() = %v", got)
+				}
+			}
+		})
+	}
+}
+
+func TestMakePointerSliceValue(t *testing.T) {
+	structEntries := make([]MockEntry, 0)
+	pointerEntries := make([]*MockEntry, 0)
+	type args struct {
+		entriesValue reflect.Value
+	}
+	tests := []struct {
+		name string
+		args args
+		want reflect.Value
+	}{
+		{
+			name: "",
+			args: args{
+				entriesValue: reflect.ValueOf(structEntries),
+			},
+			want: reflect.ValueOf(&structEntries),
+		},
+		{
+			name: "",
+			args: args{
+				entriesValue: reflect.ValueOf(pointerEntries),
+			},
+			want: reflect.ValueOf(&pointerEntries),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MakePointerSliceValue(tt.args.entriesValue); !(fmt.Sprint(got) == fmt.Sprint(tt.want)) {
+				t.Errorf("MakePointerSliceValue() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

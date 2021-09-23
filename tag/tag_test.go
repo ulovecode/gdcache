@@ -10,6 +10,7 @@ type TagTest struct {
 	Id2 int64
 	Id3 int64 `cache:"2"`
 	Id4 int64 `cache:"3"`
+	Id5 int64 `cache:"1"`
 }
 
 func TestTag_GetPkTagField(t1 *testing.T) {
@@ -37,6 +38,15 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 			},
 			want: []reflect.StructField{
 				{
+					Name:      "Id",
+					PkgPath:   "",
+					Type:      reflect.TypeOf(int64(0)),
+					Tag:       `cache:"11"`,
+					Offset:    0,
+					Index:     []int{0},
+					Anonymous: false,
+				},
+				{
 					Name:      "Id3",
 					PkgPath:   "",
 					Type:      reflect.TypeOf(int64(0)),
@@ -55,12 +65,12 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 					Anonymous: false,
 				},
 				{
-					Name:      "Id",
+					Name:      "Id5",
 					PkgPath:   "",
 					Type:      reflect.TypeOf(int64(0)),
-					Tag:       `cache:"11"`,
-					Offset:    0,
-					Index:     []int{0},
+					Tag:       `cache:"1"`,
+					Offset:    32,
+					Index:     []int{4},
 					Anonymous: false,
 				},
 			},
@@ -73,6 +83,25 @@ func TestTag_GetPkTagField(t1 *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t1.Errorf("GetCacheTagFields() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetName(t *testing.T) {
+	tests := []struct {
+		name string
+		want string
+	}{
+		{
+			name: "cache",
+			want: "cache",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetName(); got != tt.want {
+				t.Errorf("GetName() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -18,15 +18,21 @@ type ReturnKeyValue struct {
 
 // KeyValue key value entity
 type KeyValue struct {
-	Key   string
+	// Key name
+	Key string
+	// Value value
 	Value []byte
 }
 
 // ICache Cache abstraction
 type ICache interface {
+	// StoreAll Store all key-value pairs
 	StoreAll(keyValues ...KeyValue) (err error)
+	// Get value by key
 	Get(key string) (data []byte, has bool, err error)
+	// GetAll values by keys
 	GetAll(keys schemas.PK) (data []ReturnKeyValue, err error)
+	// DeleteAll delete all keys
 	DeleteAll(keys schemas.PK) error
 }
 
@@ -175,9 +181,9 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...int
 		emptySlice := value.Interface()
 
 		var res interface{}
-		if gdreflect.IsPointerElement(entriesValue.Interface()) && !gdreflect.IsPointerElement(emptySlice) {
+		if gdreflect.IsPointerElementSlice(entriesValue.Interface()) && !gdreflect.IsPointerElementSlice(emptySlice) {
 			res = gdreflect.CovertSliceStructValue2PointerValue(emptySlice)
-		} else if !gdreflect.IsPointerElement(entriesValue.Interface()) && gdreflect.IsPointerElement(emptySlice) {
+		} else if !gdreflect.IsPointerElementSlice(entriesValue.Interface()) && gdreflect.IsPointerElementSlice(emptySlice) {
 			res = gdreflect.CovertSlicePointerValue2StructValue(emptySlice)
 		} else {
 			res = emptySlice

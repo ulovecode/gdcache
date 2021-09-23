@@ -4,8 +4,8 @@ import (
 	"reflect"
 )
 
-// IsPointerElement Is a pointer type item
-func IsPointerElement(value interface{}) bool {
+// IsPointerElementSlice Is a pointer type item
+func IsPointerElementSlice(value interface{}) bool {
 	typeValue := reflect.Indirect(reflect.ValueOf(value)).Type().Elem()
 	return typeValue.Kind() == reflect.Ptr
 }
