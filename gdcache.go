@@ -10,16 +10,19 @@ import (
 	"strconv"
 )
 
+// ReturnKeyValue Return the key and value of the entity through the cache
 type ReturnKeyValue struct {
 	KeyValue
 	Has bool
 }
 
+// KeyValue key value entity
 type KeyValue struct {
 	Key   string
 	Value []byte
 }
 
+// ICache Cache abstraction
 type ICache interface {
 	StoreAll(keyValues ...KeyValue) (err error)
 	Get(key string) (data []byte, has bool, err error)
@@ -27,6 +30,7 @@ type ICache interface {
 	DeleteAll(keys schemas.PK) error
 }
 
+// IDB Database abstraction
 type IDB interface {
 	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
 	GetEntries(entries interface{}, sql string) error
@@ -34,6 +38,7 @@ type IDB interface {
 	GetEntry(entry interface{}, sql string) (bool, error)
 }
 
+// ICacheHandler Cache handler abstraction
 type ICacheHandler interface {
 	// GetEntry get a pointer to an entity type and return the entity
 	GetEntry(entry interface{}) (bool, error)
@@ -48,6 +53,7 @@ type ICacheHandler interface {
 
 var _ ICacheHandler = CacheHandler{}
 
+// CacheHandler Default Cache handler
 type CacheHandler struct {
 	cacheHandler    ICache
 	databaseHandler IDB
@@ -55,6 +61,7 @@ type CacheHandler struct {
 	log             Logger
 }
 
+// NewCacheHandler Create a Cache handler
 func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...OptionsFunc) *CacheHandler {
 	o := Options{}
 	for _, option := range options {
@@ -77,6 +84,7 @@ func NewCacheHandler(cacheHandler ICache, databaseHandler IDB, options ...Option
 	return &CacheHandler{cacheHandler: cacheHandler, databaseHandler: databaseHandler, serializer: o.serializer, log: o.log}
 }
 
+// GetEntry Get cached entity
 func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
 	entryParams, entryKey, err := schemas.GetEntryKey(entry.(schemas.IEntry))
 	if err != nil {
@@ -102,6 +110,7 @@ func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
 	return has, err
 }
 
+// GetEntries Get the list of cached entities
 func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...interface{}) error {
 	sql = builder.GenerateSql(sql, args...)
 	entriesValue := reflect.Indirect(reflect.ValueOf(entrySlice))
@@ -186,6 +195,7 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...int
 	return nil
 }
 
+// GetEntriesAndCount Get the cache list with the total
 func (c CacheHandler) GetEntriesAndCount(entries interface{}, sql string, args ...interface{}) (int64, error) {
 	var (
 		err   error
@@ -220,6 +230,7 @@ func (c CacheHandler) GetEntriesAndCount(entries interface{}, sql string, args .
 	return count, nil
 }
 
+// DelEntries Delete cache via sql
 func (c CacheHandler) DelEntries(entrySlice interface{}, sql string, args ...interface{}) error {
 	sql = builder.GenerateSql(sql, args...)
 	err := c.GetEntries(entrySlice, sql)
@@ -233,6 +244,7 @@ func (c CacheHandler) DelEntries(entrySlice interface{}, sql string, args ...int
 	return c.cacheHandler.DeleteAll(pk)
 }
 
+// EntryCache Cache entity
 type EntryCache struct {
 	entry    interface{}
 	entryKey string

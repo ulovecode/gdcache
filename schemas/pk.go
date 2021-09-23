@@ -5,6 +5,7 @@ import "strings"
 // PK represents primary key values
 type PK []string
 
+// ToEntryKeys Convert the cache key to the corresponding entity key
 func (pk PK) ToEntryKeys() []EntryKeys {
 	entryKeys := make([]EntryKeys, 0)
 	for _, p := range pk {

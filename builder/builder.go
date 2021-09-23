@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// GetEntryByIdSQL Convert a single entity to the corresponding SQL
 func GetEntryByIdSQL(entry schemas.IEntry, entryParams []schemas.EntryKey) string {
 	var idWhereString []string
 	for _, entryParam := range entryParams {
@@ -15,6 +16,7 @@ func GetEntryByIdSQL(entry schemas.IEntry, entryParams []schemas.EntryKey) strin
 	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.TableName(), strings.Join(idWhereString, "AND"))
 }
 
+// GetEntriesByIdSQL Convert the list of entities to the corresponding SQL
 func GetEntriesByIdSQL(entry schemas.IEntry, entryKeys []schemas.EntryKeys) string {
 	var idWhereString []string
 	for _, entryParams := range entryKeys {
@@ -27,6 +29,7 @@ func GetEntriesByIdSQL(entry schemas.IEntry, entryKeys []schemas.EntryKeys) stri
 	return fmt.Sprintf(`SELECT * FROM %s  WHERE %s;`, entry.TableName(), strings.Join(idWhereString, " OR "))
 }
 
+// GenerateSql Generate sql
 func GenerateSql(sql string, args ...interface{}) string {
 	if len(args) == 0 {
 		return sql
@@ -62,6 +65,7 @@ func GenerateSql(sql string, args ...interface{}) string {
 	return fmt.Sprintf(sql, params...)
 }
 
+// GenerateCountSql Generate sql with total
 func GenerateCountSql(sql string, args ...interface{}) string {
 	sql = GenerateSql(sql, args...)
 	var indexOf int

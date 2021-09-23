@@ -17,7 +17,7 @@ func (j JsonSerializer) Serialize(value interface{}) ([]byte, error) {
 	return json.Marshal(value)
 }
 
-// Serialize Deserialize
+// Deserialize Deserialize
 func (j JsonSerializer) Deserialize(data []byte, ptr interface{}) error {
 	return json.Unmarshal(data, ptr)
 }
