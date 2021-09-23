@@ -2,12 +2,15 @@ package schemas
 
 import "reflect"
 
+// IEntry Abstract entity type
 type IEntry interface {
 	TableName() string
 }
 
+// IEntries Abstract entity type array
 type IEntries []IEntry
 
+// GetPKsByEntries Get the primary key of the abstract entity type
 func GetPKsByEntries(entries interface{}) (PK, error) {
 	pks := make(PK, 0)
 	entriesElement := reflect.Indirect(reflect.ValueOf(entries))
