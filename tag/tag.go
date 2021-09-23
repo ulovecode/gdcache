@@ -17,6 +17,7 @@ func ConfigTag(tagName string) {
 	defaultTag = &tag{tagName: tagName}
 }
 
+// GetName Get tag name
 func GetName() string {
 	return defaultTag.tagName
 }
