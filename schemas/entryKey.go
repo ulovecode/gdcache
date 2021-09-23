@@ -8,15 +8,19 @@ import (
 	"strings"
 )
 
+// ServiceName Service Name
 var ServiceName string
 
+// EntryKey Cache key
 type EntryKey struct {
 	Name  string
 	Param string
 }
 
+// EntryKeys Cache key array
 type EntryKeys []EntryKey
 
+// GetEntryKey Get cache key by entity name
 func (es EntryKeys) GetEntryKey(entryName string) string {
 	var (
 		keyTemplate   = make([]string, 0)
