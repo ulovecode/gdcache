@@ -23,7 +23,7 @@ func TestEntryKeys_GetEntryKey(t *testing.T) {
 					Param: "Shanghai",
 				},
 			},
-			want: "[Name:Peter]-[City:Shanghai]",
+			want: "_#[Name:Peter]-[City:Shanghai]",
 		},
 		{
 			name: "",
@@ -33,7 +33,7 @@ func TestEntryKeys_GetEntryKey(t *testing.T) {
 					Param: "1",
 				},
 			},
-			want: "[id:1]",
+			want: "_#[id:1]",
 		},
 	}
 	for _, tt := range tests {
