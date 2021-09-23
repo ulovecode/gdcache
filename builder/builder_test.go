@@ -144,7 +144,7 @@ func TestFmtSql(t *testing.T) {
 				sql:  "SELECT * FROM spu WHERE id = ?",
 				args: []interface{}{1},
 			},
-			want: "",
+			want: "SELECT * FROM spu WHERE id = 1",
 		},
 		{
 			name: "",
@@ -152,7 +152,7 @@ func TestFmtSql(t *testing.T) {
 				sql:  "SELECT * FROM spu WHERE id in ?",
 				args: []interface{}{[]string{"1", "2"}},
 			},
-			want: "",
+			want: "SELECT * FROM spu WHERE id in (1,2)",
 		},
 		{
 			name: "",
@@ -160,7 +160,7 @@ func TestFmtSql(t *testing.T) {
 				sql:  "SELECT * FROM spu WHERE id =  ? and id = ? limit ?,?",
 				args: []interface{}{1, "2", 0, 10},
 			},
-			want: "",
+			want: "SELECT * FROM spu WHERE id =  1 and id = 2 limit 0,10",
 		},
 	}
 	for _, tt := range tests {
