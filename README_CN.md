@@ -22,6 +22,7 @@ gdcache 是一个由 golang 实现的纯非侵入式缓存库，你可以用它�
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/ulovecode/gdcache)](https://goreportcard.com/report/github.com/ulovecode/gdcache)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/ulovecode/gdcache)](https://pkg.go.dev/github.com/ulovecode/gdcache)
+[![codecov](https://codecov.io/gh/ulovecode/gdcache/branch/main/graph/badge.svg?token=4GNQINA6QX)](https://codecov.io/gh/ulovecode/gdcache)
 
 ## 特性
 
