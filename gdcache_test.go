@@ -70,7 +70,7 @@ func NewMemoryDb() *MemoryDb {
 
 // GetEntries Get the list of entities through sql
 func (m MemoryDb) GetEntries(entries interface{}, sql string) error {
-	if sql == "SELECT * FROM public_relation  WHERE  relateId = 1 AND sourceId = 2 AND propertyId = 3 ;" {
+	if sql == "SELECT * FROM public_relation  WHERE  relateId = 1 AND sourceId = 2 AND propertyId = 3 ;" || sql == "SELECT * FROM public_relation  WHERE (  relateId = 1 AND sourceId = 2 AND propertyId = 3  );" {
 		mockEntries := make([]MockEntry, 0)
 		mockEntries = append(mockEntries, MockEntry{
 			RelateId:   1,
@@ -473,6 +473,62 @@ func TestNewCacheHandler(t *testing.T) {
 			if got := NewCacheHandler(tt.args.cacheHandler, tt.args.databaseHandler, tt.args.options...); !(schemas.ServiceName == "test") {
 				t.Errorf("NewCacheHandler() = %v", got)
 			}
+		})
+	}
+}
+
+func TestCacheHandler_GetEntriesByIds(t *testing.T) {
+	entries := make([]MockEntry, 0)
+	entryCondition := []MockEntry{
+		{
+			RelateId:   1,
+			SourceId:   2,
+			PropertyId: 3,
+		},
+	}
+	type fields struct {
+		cacheHandler    ICache
+		databaseHandler IDB
+		serializer      Serializer
+		log             Logger
+	}
+	type args struct {
+		entries       interface{}
+		entrySliceIds interface{}
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "",
+			fields: fields{
+				cacheHandler:    NewMemoryCacheHandler(),
+				databaseHandler: NewMemoryDb(),
+				serializer:      JsonSerializer{},
+				log:             DefaultLogger{},
+			},
+			args: args{
+				entries:       &entries,
+				entrySliceIds: entryCondition,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := CacheHandler{
+				cacheHandler:    tt.fields.cacheHandler,
+				databaseHandler: tt.fields.databaseHandler,
+				serializer:      tt.fields.serializer,
+				log:             tt.fields.log,
+			}
+			if err := c.GetEntriesByIds(tt.args.entries, tt.args.entrySliceIds); (err != nil) != tt.wantErr {
+				t.Errorf("GetEntriesByIds() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			t.Logf("%v", entries)
 		})
 	}
 }
