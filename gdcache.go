@@ -48,6 +48,8 @@ type IDB interface {
 type ICacheHandler interface {
 	// GetEntry get a pointer to an entity type and return the entity
 	GetEntry(entry interface{}) (bool, error)
+	// GetEntriesByIds cache the entity content obtained through ids, and return the entity of the array pointer type
+	GetEntriesByIds(entries interface{}, entrySliceIds interface{}) error
 	// GetEntries cache the entity content obtained through sql, and return the entity of the array pointer type
 	GetEntries(entrySlice interface{}, sql string, args ...interface{}) error
 	// GetEntriesAndCount  cache the entity content obtained through sql, and return the entity of the array pointer type, and return the total quantity
@@ -116,15 +118,40 @@ func (c CacheHandler) GetEntry(entry interface{}) (bool, error) {
 	return has, err
 }
 
+func (c CacheHandler) GetEntriesByIds(entries interface{}, entrySliceIds interface{}) error {
+	pks, err := schemas.GetPKsByEntries(entrySliceIds)
+	if err != nil {
+		c.log.Error("GetPKsByEntries err:%v ,entrySliceIds:%v", err, entrySliceIds)
+	}
+	return c.getEntriesByPks(entries, c.getSQLByPks(entries, pks), pks)
+}
+
+func (c CacheHandler) getSQLByPks(entries interface{}, pks schemas.PK) string {
+	entriesValue := reflect.Indirect(reflect.ValueOf(entries))
+	entryElementType := entriesValue.Type().Elem()
+
+	if entryElementType.Kind() == reflect.Ptr {
+		entryElementType = entryElementType.Elem()
+	}
+	entry := reflect.New(entryElementType)
+
+	sql := builder.GetEntriesByIdSQL(entry.Interface().(schemas.IEntry), pks.ToEntryKeys())
+	return sql
+}
+
 // GetEntries Get the list of cached entities
 func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...interface{}) error {
 	sql = builder.GenerateSql(sql, args...)
-	entriesValue := reflect.Indirect(reflect.ValueOf(entrySlice))
-	entryElementType := entriesValue.Type().Elem()
 	pks, err := c.getIdsByCacheSQL(sql)
 	if err != nil {
 		c.log.Error("getIdsByCacheSQL err: %v ,sql :%v", err, sql)
 	}
+	return c.getEntriesByPks(entrySlice, sql, pks)
+}
+
+func (c CacheHandler) getEntriesByPks(entrySlice interface{}, sql string, pks schemas.PK) error {
+	entriesValue := reflect.Indirect(reflect.ValueOf(entrySlice))
+	entryElementType := entriesValue.Type().Elem()
 	var isNoCacheSQL = len(pks) == 0
 	keyValues, err := c.cacheHandler.GetAll(pks)
 	if err != nil {
@@ -164,12 +191,7 @@ func (c CacheHandler) GetEntries(entrySlice interface{}, sql string, args ...int
 				c.log.Error("setIdsByCacheSQL err:%v , restPk:%v ,sql:%v", err, restPk, sql)
 			}
 		} else {
-			if entryElementType.Kind() == reflect.Ptr {
-				entryElementType = entryElementType.Elem()
-			}
-			entry := reflect.New(entryElementType)
-
-			sql = builder.GetEntriesByIdSQL(entry.Interface().(schemas.IEntry), pks.ToEntryKeys())
+			sql = c.getSQLByPks(entrySlice, pks)
 			err = c.databaseHandler.GetEntries(value.Interface(), sql)
 			if err != nil {
 				c.log.Error("GetEntries err:%v ,sql:%v", err, sql)
