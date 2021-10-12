@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/ulovecode/gdcache/schemas"
+	"github.com/ulovecode/gdcache/tag"
 	"testing"
 )
 
@@ -478,6 +479,7 @@ func TestNewCacheHandler(t *testing.T) {
 }
 
 func TestCacheHandler_GetEntriesByIds(t *testing.T) {
+	tag.ConfigTag("cache")
 	entries := make([]MockEntry, 0)
 	entryCondition := []MockEntry{
 		{
