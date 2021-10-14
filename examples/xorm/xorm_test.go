@@ -98,4 +98,24 @@ func TestNewXormCache(t *testing.T) {
 	}
 	t.Log(count)
 
+	condition := []User{
+		{
+			Id: 1,
+		},
+		{
+			Id: 2,
+		},
+		{
+			Id: 3,
+		},
+	}
+
+	err = handler.GetEntriesByIds(&users1, condition)
+	if err != nil {
+		t.FailNow()
+	}
+	for _, user := range users1 {
+		t.Logf("%v", user)
+	}
+	t.Log(count)
 }

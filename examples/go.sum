@@ -162,6 +162,8 @@ github.com/ulovecode/gdcache v0.2.10 h1:NBnCRaDmC6+qXdNekEe8qA/kTKd02QTNhPAF6S7t
 github.com/ulovecode/gdcache v0.2.10/go.mod h1:Yb5gJccpYia2hLWLg+uXP+W9mP6H46Fezwns+VAhIZE=
 github.com/ulovecode/gdcache v0.2.11 h1:0w+RSL2TmdOtGt+ZqEOceFh+YrNr0pkDoezPs1SeB2I=
 github.com/ulovecode/gdcache v0.2.11/go.mod h1:Yb5gJccpYia2hLWLg+uXP+W9mP6H46Fezwns+VAhIZE=
+github.com/ulovecode/gdcache v0.2.18 h1:aS+8FVvgJcXXYMPah/xP1CRw+o820CP4PYCPPaq6vvU=
+github.com/ulovecode/gdcache v0.2.18/go.mod h1:Yb5gJccpYia2hLWLg+uXP+W9mP6H46Fezwns+VAhIZE=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 go.opencensus.io v0.20.1 h1:pMEjRZ1M4ebWGikflH7nQpV6+Zr88KBMA2XJD3sbijw=

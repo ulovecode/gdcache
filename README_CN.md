@@ -29,7 +29,7 @@ gdcache 是一个由 golang 实现的纯非侵入式缓存库，你可以用它�
 - 自动缓存 sql
 - 复用 sql 之间的缓存
 - 适配 Xorm 和 Gorm 框架
-- 支持缓存联合key  
+- 支持缓存联合key
 - 轻量级
 - 无侵入性
 - 高性能
@@ -59,13 +59,13 @@ go get github.com/ulovecode/gdcache
 
 ```go
 type User struct {
-	Id   uint64 `cache:"id"` // Or omit the tag
-	Name string 
-	Age  int
+Id   uint64 `cache:"id"` // Or omit the tag
+Name string
+Age  int
 }
 
 func (u User) TableName() string {
-	return "user"
+return "user"
 }
 ```
 
@@ -73,14 +73,14 @@ func (u User) TableName() string {
 
 ```go
 type PublicRelations struct {
-	RelatedId uint64 `cache:"related_id"`
-	RelatedType string  
-	SourceId uint64 `cache:"source_id"`
-	SourceType string 
+RelatedId uint64 `cache:"related_id"`
+RelatedType string
+SourceId uint64 `cache:"source_id"`
+SourceType string
 }
 
 func (u PublicRelations) TableName() string {
-	return "public_relations"
+return "public_relations"
 }
 ```
 
@@ -88,47 +88,47 @@ func (u PublicRelations) TableName() string {
 
 ```go
 type MemoryCacheHandler struct {
-	data map[string][]byte
+data map[string][]byte
 }
 
 func (m MemoryCacheHandler) StoreAll(keyValues ...gdcache.KeyValue) (err error) {
-	for _, keyValue := range keyValues {
-		m.data[keyValue.Key] = keyValue.Value
-	}
-	return nil
+for _, keyValue := range keyValues {
+m.data[keyValue.Key] = keyValue.Value
+}
+return nil
 }
 
 func (m MemoryCacheHandler) Get(key string) (data []byte, has bool, err error) {
-	bytes, has := m.data[key]
-	return bytes, has, nil
+bytes, has := m.data[key]
+return bytes, has, nil
 }
 
 func (m MemoryCacheHandler) GetAll(keys schemas.PK) (data []gdcache.ReturnKeyValue, err error) {
-	returnKeyValues := make([]gdcache.ReturnKeyValue, 0)
-	for _, key := range keys {
-		bytes, has := m.data[key]
-		returnKeyValues = append(returnKeyValues, gdcache.ReturnKeyValue{
-			KeyValue: gdcache.KeyValue{
-				Key:   key,
-				Value: bytes,
-			},
-			Has: has,
-		})
-	}
-	return returnKeyValues, nil
+returnKeyValues := make([]gdcache.ReturnKeyValue, 0)
+for _, key := range keys {
+bytes, has := m.data[key]
+returnKeyValues = append(returnKeyValues, gdcache.ReturnKeyValue{
+KeyValue: gdcache.KeyValue{
+Key:   key,
+Value: bytes,
+},
+Has: has,
+})
+}
+return returnKeyValues, nil
 }
 
 func (m MemoryCacheHandler) DeleteAll(keys schemas.PK) error {
-	for _, k := range keys {
-		delete(m.data, k)
-	}
-	return nil
+for _, k := range keys {
+delete(m.data, k)
+}
+return nil
 }
 
 func NewMemoryCacheHandler() *MemoryCacheHandler {
-	return &MemoryCacheHandler{
-		data: make(map[string][]byte, 0),
-	}
+return &MemoryCacheHandler{
+data: make(map[string][]byte, 0),
+}
 }
 ```
 
@@ -138,34 +138,34 @@ func NewMemoryCacheHandler() *MemoryCacheHandler {
 
 ```go
 type GormDB struct {
-	db *gorm.DB
+db *gorm.DB
 }
 
 func (g GormDB) GetEntries(entries interface{}, sql string) error {
-	tx := g.db.Raw(sql).Find(entries)
-	return tx.Error
+tx := g.db.Raw(sql).Find(entries)
+return tx.Error
 }
 
 func (g GormDB) GetEntry(entry interface{}, sql string) (bool, error) {
-    tx := g.db.Raw(sql).Take(entry)
-    if gorm.ErrRecordNotFound == tx.Error {
-    	return false, nil
-    }
-    return tx.Error != gorm.ErrRecordNotFound, tx.Error
+tx := g.db.Raw(sql).Take(entry)
+if gorm.ErrRecordNotFound == tx.Error {
+return false, nil
+}
+return tx.Error != gorm.ErrRecordNotFound, tx.Error
 }
 
 func NewGormCacheHandler() *gdcache.CacheHandler {
-	return gdcache.NewCacheHandler(NewMemoryCacheHandler(), NewGormDd())
+return gdcache.NewCacheHandler(NewMemoryCacheHandler(), NewGormDd())
 }
 
 func NewGormDd() gdcache.IDB {
-	db, err := gorm.Open(mysql.Open("root:root@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local"), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	return GormDB{
-		db: db,
-	}
+db, err := gorm.Open(mysql.Open("root:root@tcp(127.0.0.1:3306)/test?charset=utf8&parseTime=True&loc=Local"), &gorm.Config{})
+if err != nil {
+panic(err)
+}
+return GormDB{
+db: db,
+}
 }
 ```
 
@@ -175,33 +175,34 @@ func NewGormDd() gdcache.IDB {
 
 ```go
 type XormDB struct {
-	db *xorm.Engine
+db *xorm.Engine
 }
 
 func (g XormDB) GetEntries(entries interface{}, sql string) ( error) {
-	err := g.db.SQL(sql).Find(entries)
-	return  err
+err := g.db.SQL(sql).Find(entries)
+return err
 }
 
 func (g XormDB) GetEntry(entry interface{}, sql string) ( bool, error) {
-	has, err := g.db.SQL(sql).Get(entry)
-	return has, err
+has, err := g.db.SQL(sql).Get(entry)
+return has, err
 }
 
 func NewXormCacheHandler() *gdcache.CacheHandler {
-	return gdcache.NewCacheHandler(NewMemoryCacheHandler(), NewXormDd())
+return gdcache.NewCacheHandler(NewMemoryCacheHandler(), NewXormDd())
 }
 
 func NewXormDd() gdcache.IDB {
-	db, err := xorm.NewEngine("mysql", "root:root@/test?charset=utf8")
-	if err != nil {
-		panic(err)
-	}
-	return XormDB{
-		db: db,
-	}
+db, err := xorm.NewEngine("mysql", "root:root@/test?charset=utf8")
+if err != nil {
+panic(err)
+}
+return XormDB{
+db: db,
+}
 }
 ```
+
 ### 原生SQL 使用
 
 实现 `IDB` 接口
@@ -212,34 +213,34 @@ type MemoryDb struct {
 }
 
 func NewMemoryDb() *MemoryDb {
-	return &MemoryDb{}
+return &MemoryDb{}
 }
 
 func (m MemoryDb) GetEntries(entries interface{}, sql string) error {
-	mockEntries := make([]MockEntry, 0)
-	mockEntries = append(mockEntries, MockEntry{
-		RelateId:   1,
-		SourceId:   2,
-		PropertyId: 3,
-	})
-	marshal, _ := json.Marshal(mockEntries)
-	json.Unmarshal(marshal, entries)
-	return nil
+mockEntries := make([]MockEntry, 0)
+mockEntries = append(mockEntries, MockEntry{
+RelateId:   1,
+SourceId:   2,
+PropertyId: 3,
+})
+marshal, _ := json.Marshal(mockEntries)
+json.Unmarshal(marshal, entries)
+return nil
 }
 
 func (m MemoryDb) GetEntry(entry interface{}, sql string) (bool, error) {
-	mockEntry := &MockEntry{
-		RelateId:   1,
-		SourceId:   2,
-		PropertyId: 3,
-	}
-	marshal, _ := json.Marshal(mockEntry)
-	json.Unmarshal(marshal, entry)
-	return true, nil
+mockEntry := &MockEntry{
+RelateId:   1,
+SourceId:   2,
+PropertyId: 3,
+}
+marshal, _ := json.Marshal(mockEntry)
+json.Unmarshal(marshal, entry)
+return true, nil
 }
 
 func NewMemoryCache() *gdcache.CacheHandler {
-	return gdcache.NewCacheHandler(NewMemoryCacheHandler(), NewMemoryDb())
+return gdcache.NewCacheHandler(NewMemoryCacheHandler(), NewMemoryDb())
 }
 ```
 
@@ -282,11 +283,33 @@ func TestNewGormCache(t *testing.T) {
 	
         count, err = handler.GetEntriesAndCount(&users1, "SELECT * FROM user WHERE id in (1,2)")
         if err != nil {
-        t.FailNow()
+            t.FailNow()
         }
+        
         for _, user := range users1 {
-        t.Logf("%v", user)
+          t.Logf("%v", user)
         }
+        
+        t.Log(count)
+          condition := []User{
+        {
+            Id:   1,
+        },
+        {
+         Id:   2,
+        },
+        {
+            Id:   3,
+        },
+        }
+        
+      err = handler.GetEntriesByIds(&users1, condition)
+      if err != nil {
+       t.FailNow()
+      }
+      for _, user := range users1 {
+         t.Logf("%v", user)
+      }
         t.Log(count)
 }
 ```
@@ -298,6 +321,7 @@ func TestNewGormCache(t *testing.T) {
 您可以帮助提供更好的 gdcahe ，通过提交 pr 的方式。
 
 ## 许可证
+
 © Jovanzhu, 2021~time.Now
 
 发布在 [MIT License](https://github.com/ulovecode/gdcache/blob/main/LICENSE) 之下
